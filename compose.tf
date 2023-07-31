@@ -34,20 +34,28 @@ resource "aws_instance" "testing" {
       "sudo yum install docker -y",
       "sudo service docker start",
       "sudo usermod -aG docker ec2-user"  # Add the current user to the docker group to run docker commands without sudo
-    }
+    ]
   }
+
+  # Install Docker Compose on the EC2 instance
+  user_data = <<-EOF
+              #!/bin/bash
+              # Install Docker Compose
+              sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+              sudo chmod +x /usr/local/bin/docker-compose
+              EOF
 
   # Copy Docker Compose YAML file to the EC2 instance
   provisioner "file" {
-    source      = "path/to/docker-compose.yml"  # Replace with the path to your Docker Compose YAML file
-    destination = "/home/ec2-user/docker-compose.yml"
+    source      = "/home/gihanroey/git-projects/redis_flask/docker-compose.yaml"  # path to Docker Compose YAML file
+    destination = "/home/ec2-user/docker-compose.yaml"
   }
 
-  # Start Docker Compose on the EC2 instance
+  # Pull and run the Docker image for your Flask project
   provisioner "remote-exec" {
     inline = [
-      "sudo docker login -u Gihan4 -p Ro123Ey123G4",  # Login to Docker Hub (if needed)
-      "sudo docker-compose -f /home/ec2-user/docker-compose.yml up -d"  # Run Docker Compose in detached mode
+      "sudo docker login -u Gihan4 -p Ro123Ey123G4",  # Login to Docker Hub
+      "sudo docker-compose -f /home/ec2-user/docker-compose.yaml up -d"  # Run Docker Compose in detached mode
     ]
   }
 }
@@ -56,7 +64,7 @@ resource "aws_instance" "testing" {
 resource "aws_security_group" "web_server_sg" {
   name_prefix = "example-security-group"
 
-  # Inbound rules for the Flask application
+  # Inbound rules
   ingress {
     from_port   = 80
     to_port     = 80
