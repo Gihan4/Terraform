@@ -40,6 +40,7 @@ resource "aws_instance" "testing" {
   # Install Docker Compose on the EC2 instance
   user_data = <<-EOF
               #!/bin/bash
+              set -xe  # Enable verbose mode and exit immediately on error
               # Install Docker Compose
               sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
               sudo chmod +x /usr/local/bin/docker-compose
